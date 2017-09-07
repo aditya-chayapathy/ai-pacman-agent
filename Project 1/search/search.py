@@ -90,14 +90,14 @@ def depthFirstSearch(problem):
     fringe = util.Stack()
     visited_nodes = set()
     fringe.push((problem.getStartState(), []))
-    while(True):
+    while True:
         popped_element = fringe.pop()
         node = popped_element[0]
         path_till_node = popped_element[1]
-        if (problem.isGoalState(node)):
+        if problem.isGoalState(node):
             break
         else:
-            if not node in visited_nodes:
+            if node not in visited_nodes:
                 visited_nodes.add(node)
                 successors = problem.getSuccessors(node)
                 for successor in successors:
@@ -114,14 +114,14 @@ def breadthFirstSearch(problem):
     fringe = util.Queue()
     visited_nodes = set()
     fringe.push((problem.getStartState(), []))
-    while (True):
+    while True:
         popped_element = fringe.pop()
         node = popped_element[0]
         path_till_node = popped_element[1]
-        if (problem.isGoalState(node)):
+        if problem.isGoalState(node):
             break
         else:
-            if not node in visited_nodes:
+            if node not in visited_nodes:
                 visited_nodes.add(node)
                 successors = problem.getSuccessors(node)
 
@@ -139,15 +139,15 @@ def uniformCostSearch(problem):
     fringe = util.PriorityQueue()
     visited_nodes = set()
     fringe.push((problem.getStartState(), [], 0),0)
-    while (True):
+    while True:
         popped_element = fringe.pop()
         node = popped_element[0]
         path_till_node = popped_element[1]
         cost_till_node = popped_element[2]
-        if (problem.isGoalState(node)):
+        if problem.isGoalState(node):
             break
         else:
-            if not node in visited_nodes:
+            if node not in visited_nodes:
                 visited_nodes.add(node)
                 successors = problem.getSuccessors(node)
                 for successor in successors:
@@ -173,15 +173,15 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     fringe = util.PriorityQueue()
     visited_nodes = set()
     fringe.push((problem.getStartState(), [], 0), heuristic(problem.getStartState(), problem) + 0)
-    while (True):
+    while True:
         popped_element = fringe.pop()
         node = popped_element[0]
         path_till_node = popped_element[1]
         cost_till_node = popped_element[2]
-        if (problem.isGoalState(node)):
+        if problem.isGoalState(node):
             break
         else:
-            if not node in visited_nodes:
+            if node not in visited_nodes:
                 visited_nodes.add(node)
                 successors = problem.getSuccessors(node)
                 for successor in successors:
