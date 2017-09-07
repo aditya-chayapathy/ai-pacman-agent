@@ -490,7 +490,7 @@ def foodHeuristic(state, problem):
     for node in foodGrid.asList():
         distance_to_food_containing_nodes.append(util.manhattanDistance(node, position))
 
-    if (len(distance_to_food_containing_nodes) == 0):
+    if len(distance_to_food_containing_nodes) == 0:
         return 0
 
     return max(distance_to_food_containing_nodes)
