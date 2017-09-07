@@ -414,7 +414,7 @@ class FoodSearchProblem:
         self.walls = startingGameState.getWalls()
         self.startingGameState = startingGameState
         self._expanded = 0 # DO NOT CHANGE
-        self.heuristicInfo = {} # A dictionary for the heuristic to store information
+        self.heuristicInfo = {'state':startingGameState} # A dictionary for the heuristic to store information
 
     def getStartState(self):
         return self.start
@@ -488,7 +488,8 @@ def foodHeuristic(state, problem):
     "*** YOUR CODE HERE ***"
     distance_to_food_containing_nodes = []
     for node in foodGrid.asList():
-        distance_to_food_containing_nodes.append(util.manhattanDistance(node, position))
+        prob = PositionSearchProblem(problem.heuristicInfo['state'], start=position, goal=node, warn=False, visualize=False)
+        distance_to_food_containing_nodes.append(len(search.bfs(prob)))
 
     if len(distance_to_food_containing_nodes) == 0:
         return 0
