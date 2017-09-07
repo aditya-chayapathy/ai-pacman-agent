@@ -299,11 +299,11 @@ class CornersProblem(search.SearchProblem):
         for corner in self.corners:
             corners_set.add(corner)
 
-        if self.startingPosition in self.corners:
+        if self.startingPosition in self.corners:  # Checking if the starting position is one of the corners.
             corners_set.remove(self.startingPosition)
 
         corners_tuple = tuple(corners_set)
-        return (self.startingPosition, corners_tuple)
+        return (self.startingPosition, corners_tuple)  # State = ((current position), (a tuple listing all the corners that haven't yet been visited))
 
     def isGoalState(self, state):
         """
@@ -311,7 +311,7 @@ class CornersProblem(search.SearchProblem):
         """
         "*** YOUR CODE HERE ***"
         corners_tuple = state[1]
-        if len(corners_tuple) == 0:
+        if len(corners_tuple) == 0:   # Goal is reached once the tuple containing the list of unvisited corners is empty
             return True
 
         return False
@@ -340,13 +340,14 @@ class CornersProblem(search.SearchProblem):
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             if not self.walls[nextx][nexty]:
-                nextState = (nextx, nexty)
+                nextState = (nextx, nexty)  # Forming the position of the successor
                 cost = 1
                 corners_tuple = state[1]
                 corners_set = set(corners_tuple)
-                if nextState in self.corners and nextState in corners_set:
+                if nextState in self.corners and nextState in corners_set:  # Removing the corner from the state tuple in case the new state is an unvisited corner.
                     corners_set.remove(nextState)
-                successors.append(((nextState, tuple(corners_set)), action, cost))
+                successors.append(((nextState, tuple(corners_set)), action, cost))  # Adding to the successors list
+
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
@@ -379,20 +380,24 @@ def cornersHeuristic(state, problem):
     """
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
-    "*** YOUR CODE HERE ***"
-    corners_tuple = state[1]
-    corners_list = list(corners_tuple)
-    distance_to_far_corner = -1
-    far_corner = ()
-    for corner in corners_list:
-        if ((distance_to_far_corner == -1) or (distance_to_far_corner < util.manhattanDistance(corner, state[0]))):
-            far_corner = tuple(corner)
-            distance_to_far_corner = util.manhattanDistance(far_corner, state[0])
 
-    if len(far_corner) == 0:
+    "*** YOUR CODE HERE ***"
+    """
+    Heuristic = Manhattan distance to the furthest unvisited corner
+    """
+    corners_tuple = state[1]
+    corners_list = list(corners_tuple)  # Obtain all the unvisted corners
+    distance_to_farthest_corner = -1 # Initializa distance to -1
+    farthest_corner = ()
+    for corner in corners_list:
+        if (distance_to_farthest_corner == -1) or (distance_to_farthest_corner < util.manhattanDistance(corner, state[0])): # Update farthest corner and distance
+            farthest_corner = tuple(corner)
+            distance_to_farthest_corner = util.manhattanDistance(farthest_corner, state[0])
+
+    if len(farthest_corner) == 0:
         return 0
 
-    return distance_to_far_corner
+    return distance_to_farthest_corner  # Return the farthest distance
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -414,7 +419,8 @@ class FoodSearchProblem:
         self.walls = startingGameState.getWalls()
         self.startingGameState = startingGameState
         self._expanded = 0 # DO NOT CHANGE
-        self.heuristicInfo = {'state':startingGameState} # A dictionary for the heuristic to store information
+        self.heuristicInfo = {'state': startingGameState} # A dictionary for the heuristic to store information
+        # Here we are storing the GameState in the dictionary that we are using while calculating the heuristics.
 
     def getStartState(self):
         return self.start
@@ -486,15 +492,18 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
+    """
+    Heuristics = Count of the number of nodes in the path to the farthest food position using BFS search expansion
+    """
     distance_to_food_containing_nodes = []
     for node in foodGrid.asList():
-        prob = PositionSearchProblem(problem.heuristicInfo['state'], start=position, goal=node, warn=False, visualize=False)
-        distance_to_food_containing_nodes.append(len(search.bfs(prob)))
+        prob = PositionSearchProblem(problem.heuristicInfo['state'], start=position, goal=node, warn=False, visualize=False)  # Formulate a position search problem
+        distance_to_food_containing_nodes.append(len(search.bfs(prob)))  # Perform BFS to obtain the path to the node from the given state
 
     if len(distance_to_food_containing_nodes) == 0:
         return 0
 
-    return max(distance_to_food_containing_nodes)
+    return max(distance_to_food_containing_nodes) 
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -525,7 +534,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        return search.bfs(problem)
+        return search.bfs(problem)  # Performing BFS search on the problem passed as input
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -561,8 +570,8 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        foodPosList = self.food.asList()
-        if state in foodPosList:
+        food_position_list = self.food.asList()
+        if state in food_position_list:  # Goal is reached if the food position is the same as the current state
             return True
         return False
 
