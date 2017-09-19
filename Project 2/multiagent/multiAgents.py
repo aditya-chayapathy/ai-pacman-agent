@@ -253,6 +253,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 if nextAgent == 0:
                     depth += 1
                 return sum(expectimax(nextAgent, depth, gameState.generateSuccessor(agent, newState)) for newState in gameState.getLegalActions(agent)) / float(len(gameState.getLegalActions(agent)))
+
         maximum = float("-inf")
         action = Directions.WEST
         for agentState in gameState.getLegalActions(0):
