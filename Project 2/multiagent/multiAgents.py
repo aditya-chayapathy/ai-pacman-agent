@@ -216,9 +216,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         alpha = float("-inf")
         beta = float("inf")
         for agentState in gameState.getLegalActions(0):
-            temp = alphabetaprune(1, 0, gameState.generateSuccessor(0, agentState), alpha, beta)
-            if temp > utility:
-                utility = temp
+            ghostValue = alphabetaprune(1, 0, gameState.generateSuccessor(0, agentState), alpha, beta)
+            if ghostValue > utility:
+                utility = ghostValue
                 action = agentState
             if utility > beta:
                 return utility
