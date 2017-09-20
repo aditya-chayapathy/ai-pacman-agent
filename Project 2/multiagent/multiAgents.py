@@ -180,10 +180,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         def maximizer(agent, depth, game_state, a, b):
             v = float("-inf")
             for newState in game_state.getLegalActions(agent):
-                state_values = []
-                state_values.append(v)
-                state_values.append(alphabetaprune(1, depth, game_state.generateSuccessor(agent, newState), a, b))
-                v = max(state_values)
+                v = max(v, alphabetaprune(1, depth, game_state.generateSuccessor(agent, newState), a, b))
                 if v > b:
                     return v
                 a = max(a, v)
@@ -191,11 +188,15 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
         def minimizer(agent, depth, game_state, a, b):
             v = float("inf")
+
+            next_agent = agent + 1
+            if game_state.getNumAgents() == next_agent:
+                next_agent = 0
+            if next_agent == 0:
+                depth += 1
+
             for newState in game_state.getLegalActions(agent):
-                stateValues = []
-                stateValues.append(v)
-                stateValues.append(alphabetaprune(agent, depth, game_state.generateSuccessor(agent, newState), a, b))
-                v = min(stateValues)
+                v = min(v, alphabetaprune(next_agent, depth, game_state.generateSuccessor(agent, newState), a, b))
                 if v < a:
                     return v
                 b = min(b, v)
@@ -204,28 +205,25 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         def alphabetaprune(agent, depth, game_state, a, b):
             if game_state.isLose() or game_state.isWin() or depth == self.depth:
                 return self.evaluationFunction(game_state)
-            next_agent = agent + 1
-            if game_state.getNumAgents() == next_agent:
-                next_agent = 0
-            if next_agent == 0:
-                depth += 1
+
             if agent == 0:
                 return maximizer(agent, depth, game_state, a, b)
             else:
-                return minimizer(next_agent, depth, game_state, a, b)
+                return minimizer(agent, depth, game_state, a, b)
 
-        maximum = float("-inf")
+        utility = float("-inf")
         action = Directions.WEST
         alpha = float("-inf")
         beta = float("inf")
         for agentState in gameState.getLegalActions(0):
-            utility = minimizer(1, 0, gameState.generateSuccessor(0, agentState), alpha, beta)
-            if utility > maximum:
-                maximum = utility
+            temp = alphabetaprune(1, 0, gameState.generateSuccessor(0, agentState), alpha, beta)
+            if temp > utility:
+                utility = temp
                 action = agentState
             if utility > beta:
                 return utility
-            alpha = max(alpha, maximum)
+            alpha = max(alpha, utility)
+
         return action
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
