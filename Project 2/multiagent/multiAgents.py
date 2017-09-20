@@ -289,7 +289,7 @@ def betterEvaluationFunction(currentGameState):
         if distance <= 1:
             proximity_to_ghosts += 1
 
-    return currentGameState.getScore() + (1 / float(min_food_distance)) - (1 / float(distances_to_ghosts)) - (10 * proximity_to_ghosts) - len(newCapsule)
+    return currentGameState.getScore() + (1 / float(min_food_distance)) - (1 / float(distances_to_ghosts)) - proximity_to_ghosts - len(newCapsule)
 
 # Abbreviation
 better = betterEvaluationFunction
