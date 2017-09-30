@@ -106,7 +106,7 @@ class ValueIterationAgent(ValueEstimationAgent):
             if (maxSum == 0.0 and action == "") or weightedAverage >= maxSum:
                 finalAction = action
                 maxSum = weightedAverage
-                
+
         return finalAction
 
 
