@@ -264,10 +264,13 @@ class ParticleFilter(InferenceModule):
         """
         "*** YOUR CODE HERE ***"
         self.particles = []
-        interval = self.numParticles / len(self.legalPositions)
-        for position in self.legalPositions:
-            for i in range(0, interval):
-                self.particles.append(position)
+        flag = 0
+        while flag == 0:
+            for item in self.legalPositions:
+                if len(self.particles) == self.numParticles:
+                    flag = 1
+                    break
+                self.particles.append(item)
 
 
     def observe(self, observation, gameState):
