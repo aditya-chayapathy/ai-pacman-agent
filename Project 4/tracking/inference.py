@@ -263,6 +263,12 @@ class ParticleFilter(InferenceModule):
         weight with each position) is incorrect and may produce errors.
         """
         "*** YOUR CODE HERE ***"
+        self.particles = []
+        interval = self.numParticles / len(self.legalPositions)
+        for position in self.legalPositions:
+            for i in range(0, interval):
+                self.particles.append(position)
+
 
     def observe(self, observation, gameState):
         """
@@ -295,7 +301,29 @@ class ParticleFilter(InferenceModule):
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if noisyDistance is None:
+            for i in range(0, self.numParticles):
+                self.particles[i] = self.getJailPosition()
+        else:
+            allPossible = util.Counter()
+            currentBeliefs = self.getBeliefDistribution()
+            for pos in self.legalPositions:
+                dist = util.manhattanDistance(pacmanPosition, pos)
+                allPossible[pos] = emissionModel[dist] * currentBeliefs[pos]
+
+            flag = 0
+            for value in allPossible.values():
+                if value != 0:
+                    flag = 1
+                    break
+
+            if flag == 0:
+                self.initializeUniformly(gameState)
+            else:
+                resampledParticles = []
+                for i in range(0, self.numParticles):
+                    resampledParticles.append(util.sample(allPossible))
+                self.particles = resampledParticles
 
     def elapseTime(self, gameState):
         """
@@ -322,7 +350,14 @@ class ParticleFilter(InferenceModule):
         Counter object)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        probDist = util.Counter()
+        for particle in self.particles:
+            probDist[particle] += 1
+
+        for pos in probDist:
+            probDist[pos] /= float(self.numParticles)
+
+        return probDist
 
 class MarginalInference(InferenceModule):
     """
