@@ -311,6 +311,8 @@ class ParticleFilter(InferenceModule):
                 dist = util.manhattanDistance(pacmanPosition, pos)
                 allPossible[pos] = emissionModel[dist] * currentBeliefs[pos]
 
+            allPossible.normalize()
+
             flag = 0
             for value in allPossible.values():
                 if value != 0:
