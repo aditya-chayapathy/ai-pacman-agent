@@ -506,11 +506,11 @@ class JointParticleFilter:
         for particle in self.particles:
             prob = 1.0
             for i in range(self.numGhosts):
-                if noisyDistances[i] is None:
-                    particle = self.getParticleWithGhostInJail(particle, i)
-                else:
+                if noisyDistances[i] is not None:
                     dist = util.manhattanDistance(pacmanPosition, particle[i])
                     prob *= emissionModels[i][dist]
+                else:
+                    particle = self.getParticleWithGhostInJail(particle, i)
             allPossible[particle] += prob
 
         allPossible.normalize()
