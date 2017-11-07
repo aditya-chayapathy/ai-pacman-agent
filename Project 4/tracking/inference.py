@@ -157,10 +157,10 @@ class ExactInference(InferenceModule):
 
         if noisyDistance is None:
             allPossible[self.getJailPosition()] = 1
-
-        for p in self.legalPositions:
-            trueDistance = util.manhattanDistance(p, pacmanPosition)
-            allPossible[p] = emissionModel[trueDistance] * self.beliefs[p]
+        else:
+            for p in self.legalPositions:
+                trueDistance = util.manhattanDistance(p, pacmanPosition)
+                allPossible[p] = emissionModel[trueDistance] * self.beliefs[p]
 
         "*** END YOUR CODE HERE ***"
 
