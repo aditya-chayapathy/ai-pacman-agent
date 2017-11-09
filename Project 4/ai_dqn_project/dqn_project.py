@@ -105,8 +105,8 @@ class DQN(object):
         Q-learning rule
         """
         action_q_val = tf.reduce_sum(tf.multiply(self.q_value, self.action_input), reduction_indices=1)
-        q_val_error = tf.reduce_mean(tf.squared_difference(self.target_q_val, action_q_val))
-        update_op = tf.train.RMSPropOptimizer(0.001).minimize(q_val_error)
+        q_val_error = tf.losses.huber_loss(self.target_q_val, action_q_val)
+        update_op = tf.train.GradientDescentOptimizer(0.001).minimize(q_val_error)
 
         return update_op
 
@@ -146,7 +146,7 @@ class DQN(object):
 
         self.num_episodes += 1
 
-        if self.num_episodes % self.eps_decay == 0:
+        if self.num_episodes % self.eps_decay == 0 and self.eps_start > self.eps_end:
             self.eps_start -= self.eps_end
 
     def eval(self, save_snapshot=True):
@@ -162,7 +162,7 @@ class DQN(object):
             action = self.select_action(obs, evaluation_mode=True)
             obs, reward, done, info = env.step(action)
             total_reward += reward
-        print ("Evaluation episode: ", total_reward)
+        print("Evaluation episode: " + str(total_reward) + " Epsilon: " + str(self.eps_start) + " Episodes: " + str(self.num_episodes) + " Steps: " + str(self.num_steps))
         if save_snapshot:
             print ("Saving state with Saver")
             self.saver.save(self.sess, 'models/dqn-model', global_step=self.num_episodes)
