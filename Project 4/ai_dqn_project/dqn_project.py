@@ -127,25 +127,27 @@ class DQN(object):
             self.replay_memory.push(obs, action, next_obs, reward, done)
             obs = next_obs
 
-            if self.num_steps % self.batch_size == 0 and self.num_steps > self.batch_size:
+            self.num_steps += 1
+
+            if self.num_steps % self.batch_size == 0:
                 samples = self.replay_memory.sample(self.batch_size)
                 for sample in samples:
-                    temp = np.reshape(sample[2], [1, self.env.observation_space.shape[0]])
-                    target_val = sample[3] if sample[4] else sample[3] + self.gamma * np.max(self.sess.run(self.q_value, feed_dict={self.observation_input: temp}))
+                    sample_next_state_obs = np.reshape(sample[2], [1, self.env.observation_space.shape[0]])
+                    target_val = sample[3] if sample[4] else sample[3] + self.gamma * np.max(
+                        self.sess.run(self.q_value, feed_dict={self.observation_input: sample_next_state_obs}))
 
-                    temp = np.reshape(sample[0], [1, self.env.observation_space.shape[0]])
+                    sample_cur_state_obs = np.reshape(sample[0], [1, self.env.observation_space.shape[0]])
                     action_ip = np.zeros(4)
                     action_ip[sample[1]] = 1
-                    action_ip = np.reshape(action_ip, [1,4])
-                    self.sess.run(self.update_op, feed_dict={self.observation_input: temp, self.target_q_val: [target_val], self.action_input: action_ip})
-
-            if self.num_steps % self.eps_decay == 0 and self.num_steps > self.eps_decay and self.eps_start > self.eps_end:
-                self.eps_start -= self.eps_end
-
-            self.num_steps += 1
+                    action_ip = np.reshape(action_ip, [1, 4])
+                    self.sess.run(self.update_op,
+                                  feed_dict={self.observation_input: sample_cur_state_obs, self.target_q_val: [target_val],
+                                             self.action_input: action_ip})
 
         self.num_episodes += 1
 
+        if self.num_episodes % self.eps_decay == 0:
+            self.eps_start -= self.eps_end
 
     def eval(self, save_snapshot=True):
         """
