@@ -1,6 +1,7 @@
 from __future__ import print_function
 import gym
 import tensorflow as tf
+import tensorflow.contrib.layers as layers
 import numpy as np
 from itertools import count
 from replay_memory import ReplayMemory, Transition
@@ -40,7 +41,7 @@ class DQN(object):
         # If using e-greedy exploration
         self.eps_start = 0.9
         self.eps_end = 0.05
-        self.eps_decay = 1000 # in episodes
+        self.eps_decay = 1000  # in episodes
         # If using a target network
         self.clone_steps = 5000
 
@@ -51,9 +52,12 @@ class DQN(object):
 
         # define yours training operations here...
         self.observation_input = tf.placeholder(tf.float32, shape=[None] + list(self.env.observation_space.shape))
-        q_values = self.build_model(self.observation_input)
+        self.q_value = self.build_model(self.observation_input)
 
         # define your update operations here...
+        self.action_input = tf.placeholder(tf.float32, [None, env.action_space.n])
+        self.target_q_val = tf.placeholder(tf.float32, [None])
+        self.update_op = self.update()
 
         self.num_episodes = 0
         self.num_steps = 0
@@ -70,7 +74,11 @@ class DQN(object):
         Currently returns an op that gives all zeros.
         """
         with tf.variable_scope(scope):
-            return tf.Variable(tf.zeros((self.env.action_space.n,)))
+            x = layers.fully_connected(observation_input, 64, activation_fn=tf.nn.relu)
+            x = layers.fully_connected(x, 32, activation_fn=tf.nn.relu)
+            q_vals = layers.fully_connected(x, env.action_space.n, activation_fn=None)
+
+            return q_vals
 
     def select_action(self, obs, evaluation_mode=False):
         """
@@ -82,14 +90,25 @@ class DQN(object):
 
         Currently returns a random action.
         """
-        return env.action_space.sample()
+        obs = np.reshape(obs, [1, self.env.observation_space.shape[0]])
+        if evaluation_mode:
+            return np.argmax(self.sess.run(self.q_value, feed_dict={self.observation_input: obs}))
+        else:
+            if np.random.random() < self.eps_start:
+                return env.action_space.sample()
+            else:
+                return np.argmax(self.sess.run(self.q_value, feed_dict={self.observation_input: obs}))
 
     def update(self):
         """
         TODO: Implement the functionality to update the network according to the
         Q-learning rule
         """
-        raise NotImplementedError
+        action_q_val = tf.reduce_sum(tf.multiply(self.q_value, self.action_input), reduction_indices=1)
+        q_val_error = tf.reduce_mean(tf.squared_difference(self.target_q_val, action_q_val))
+        update_op = tf.train.RMSPropOptimizer(0.001).minimize(q_val_error)
+
+        return update_op
 
     def train(self):
         """
@@ -105,8 +124,28 @@ class DQN(object):
         while not done:
             action = self.select_action(obs, evaluation_mode=False)
             next_obs, reward, done, info = env.step(action)
+            self.replay_memory.push(obs, action, next_obs, reward, done)
+            obs = next_obs
+
+            if self.num_steps % self.batch_size == 0 and self.num_steps > self.batch_size:
+                samples = self.replay_memory.sample(self.batch_size)
+                for sample in samples:
+                    temp = np.reshape(sample[2], [1, self.env.observation_space.shape[0]])
+                    target_val = sample[3] if sample[4] else sample[3] + self.gamma * np.max(self.sess.run(self.q_value, feed_dict={self.observation_input: temp}))
+
+                    temp = np.reshape(sample[0], [1, self.env.observation_space.shape[0]])
+                    action_ip = np.zeros(4)
+                    action_ip[sample[1]] = 1
+                    action_ip = np.reshape(action_ip, [1,4])
+                    self.sess.run(self.update_op, feed_dict={self.observation_input: temp, self.target_q_val: [target_val], self.action_input: action_ip})
+
+            if self.num_steps % self.eps_decay == 0 and self.num_steps > self.eps_decay and self.eps_start > self.eps_end:
+                self.eps_start -= self.eps_end
+
             self.num_steps += 1
+
         self.num_episodes += 1
+
 
     def eval(self, save_snapshot=True):
         """
@@ -126,12 +165,14 @@ class DQN(object):
             print ("Saving state with Saver")
             self.saver.save(self.sess, 'models/dqn-model', global_step=self.num_episodes)
 
+
 def train(dqn):
     for i in count(1):
         dqn.train()
         # every 10 episodes run an evaluation episode
         if i % 10 == 0:
             dqn.eval()
+
 
 def eval(dqn):
     """
