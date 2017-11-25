@@ -31,8 +31,8 @@ class Layout:
         self.walls = Grid(self.width, self.height, False)
         self.food = Grid(self.width, self.height, False)
         self.capsules = []
-        self.allCapsules = []
-        self.hiddenCapsule = []
+        # self.allCapsules = []
+        self._hiddenCapsule = []
         self.agentPositions = []
         self.numGhosts = 0
         self.processLayoutText(layoutText)
@@ -116,8 +116,8 @@ class Layout:
                 layoutChar = layoutText[maxY - y][x]
                 self.processLayoutChar(x, y, layoutChar)
         hidden = int(len(self.capsules) / 2)
-        self.allCapsules = self.capsules
-        self.hiddenCapsule = self.capsules[hidden]
+        # self.allCapsules = self.capsules
+        self._hiddenCapsule = self.capsules[hidden]
         del self.capsules[hidden]
 
         self.agentPositions.sort()

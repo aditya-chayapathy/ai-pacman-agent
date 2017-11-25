@@ -120,7 +120,8 @@ class InfoPane:
             self.ghostDistanceText.append(t)
 
     def updateScore(self, score):
-        changeText(self.scoreText, "SCORE: % 4d" % score)
+        # changeText(self.scoreText, "SCORE: % 4d" % score)
+        changeText(self.scoreText, "")
 
     def setTeam(self, isBlue):
         text = "RED TEAM"
