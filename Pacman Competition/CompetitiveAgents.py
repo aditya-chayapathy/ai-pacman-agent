@@ -15,6 +15,7 @@
 from game import Agent
 from game import Directions
 import random
+import operator
 
 class CompetitiveAgent(Agent):
     WEST_KEY  = 'a'
@@ -33,28 +34,20 @@ class CompetitiveAgent(Agent):
     # Valid actions are Directions.NORTH, SOUTH, EAST, WEST and STOP
     # Appart from this restriction, you can do what ever you want in
     # thismethod to achieve your goals!
-    def getAction( self, state):
-        from graphicsUtils import keys_waiting
-        from graphicsUtils import keys_pressed
-        keys = keys_waiting() + keys_pressed()
-        if keys != []:
-            self.keys = keys
+    def getAction(self, state):
+        legalActions = state.getLegalActions(self.index)
+        actionDict = {}
+        for action in legalActions:
+            actionDict[action] = self.evaluate_move(action, state)
 
-        legal = state.getLegalActions(self.index)
-        move = self.getMove(legal)
+        sortedDict = sorted(actionDict.items(), key=operator.itemgetter(1), reverse=True)
 
-        if move == Directions.STOP:
-            # Try to move in the same direction as before
-            if self.lastMove in legal:
-                move = self.lastMove
+        return sortedDict[0][0]
 
-        if (self.STOP_KEY in self.keys) and Directions.STOP in legal: move = Directions.STOP
+    def evaluate_move(self, action, state):
+        nextState = state.generateSuccessor(0, action)
 
-        if move not in legal:
-            move = random.choice(legal)
-
-        self.lastMove = move
-        return move
+        return 1
 
     # This is a simple helper, that can be ignored
     def getMove(self, legal):

@@ -368,10 +368,11 @@ class PacmanRules:
         if manhattanDistance( nearest, next ) <= 0.5 :
             # Remove food
             PacmanRules.consume( nearest, state )
-        if manhattanDistance( state.data.agentStates[0].getPosition(), state.data.agentStates[1].getPosition() ) <= 0.5 :
-            if(state.data.agentStates[0].angryTimer > 0 and state.data.agentStates[1].angryTimer == 0):
-                state.data._win = True
-                state.data._lose = False
+        if len(state.data.agentStates) > 1:
+            if manhattanDistance( state.data.agentStates[0].getPosition(), state.data.agentStates[1].getPosition() ) <= 0.5 :
+                if(state.data.agentStates[0].angryTimer > 0 and state.data.agentStates[1].angryTimer == 0):
+                    state.data._win = True
+                    state.data._lose = False
     applyAction = staticmethod( applyAction )
 
     def consume( position, state ):
