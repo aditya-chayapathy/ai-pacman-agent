@@ -30,7 +30,7 @@ class CompetitiveAgent(Agent):
         self.lastMove = Directions.STOP
         self.index = index
         self.keys = []
-        self.capsulesVisited = set()
+        self.capsulesAvailable = set()
         self.positionsVisited = set()
         self.positionDict = util.Counter()
 
@@ -42,11 +42,14 @@ class CompetitiveAgent(Agent):
         legalActions = state.getLegalActions(self.index)
         actionDict = {}
         for action in legalActions:
-            actionDict[action] = self.evaluate_move(action, state)
+            actionDict[action] = self.evaluateAction(action, state)
 
         sortedDict = sorted(actionDict.items(), key=operator.itemgetter(1), reverse=True)
         bestAction = sortedDict[0][0]
         self.positionsVisited.add(bestAction)
+
+        if state.getPacmanPosition() in self.capsulesAvailable:
+            self.capsulesAvailable.remove(state.getPacmanPosition())
 
         return bestAction
 
@@ -61,7 +64,7 @@ class CompetitiveAgent(Agent):
 
         return minPos, minDist
 
-    def evaluate_move(self, action, state):
+    def evaluateAction(self, action, state):
         nextState = state.generateSuccessor(0, action)
 
         capsulePositions = nextState.getCapsules()
@@ -71,13 +74,14 @@ class CompetitiveAgent(Agent):
         if isCapsuleAround:
             nearestCapsule, distanceToNearestCapsule = self.getNearestCapsule(pacmanPosition, capsulePositions, nextState)
         for capsule in capsulePositions:
-            self.capsulesVisited.add(capsule)
+            self.capsulesAvailable.add(capsule)
         numberOfAgents = nextState.getNumAgents()
+        isOpponentVisible = True if numberOfAgents > 1 else False
         pacmanAngryTimer = nextState.data.agentStates[0].angryTimer
         isPacmanAngry = True if pacmanAngryTimer > 0 else False
         actionValue = 0
 
-        if numberOfAgents > 1:
+        if isOpponentVisible:
             opponentPosition = nextState.getGhostPosition(1)
             opponentAngryTimer = nextState.data.agentStates[1].angryTimer
             isOpponentAngry = True if opponentAngryTimer > 0 else False
@@ -85,6 +89,8 @@ class CompetitiveAgent(Agent):
 
             if isOpponentAngry and not isPacmanAngry:
                 actionValue += pacmanOpponentDist
+                if action == Directions.STOP:
+                    actionValue -= 1000
             elif isPacmanAngry and not isOpponentAngry:
                 actionValue -= pacmanOpponentDist
             elif isOpponentAngry and isPacmanAngry:
@@ -104,12 +110,13 @@ class CompetitiveAgent(Agent):
                 if action == Directions.STOP:
                     actionValue -= 100
         else:
-            # if len(self.capsulesVisited) != 0:
-            #     nearestVisitedCapsule, distanceToNearestVisitedCapsule = self.getNearestCapsule(pacmanPosition, list(self.capsulesVisited), nextState)
-            #     actionValue -= distanceToNearestVisitedCapsule
-            # else:
-            return 1
-
+            if len(self.capsulesAvailable) != 0:
+                nearestVisitedCapsule, distanceToNearestVisitedCapsule = self.getNearestCapsule(pacmanPosition, list(self.capsulesAvailable), nextState)
+                actionValue -= distanceToNearestVisitedCapsule
+            else:
+                actionValue = random.randint(1, 100)
+                if action == Directions.STOP:
+                    actionValue -= 100
 
         return actionValue
 
