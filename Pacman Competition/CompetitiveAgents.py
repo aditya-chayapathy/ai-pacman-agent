@@ -31,8 +31,6 @@ class CompetitiveAgent(Agent):
         self.index = index
         self.keys = []
         self.capsulesAvailable = set()
-        self.positionsVisited = set()
-        self.positionDict = util.Counter()
 
     # This method is required and should return one of the 5 actions
     # Valid actions are Directions.NORTH, SOUTH, EAST, WEST and STOP
@@ -40,16 +38,16 @@ class CompetitiveAgent(Agent):
     # thismethod to achieve your goals!
     def getAction(self, state):
         legalActions = state.getLegalActions(self.index)
+        pacmanPosition = state.getPacmanPosition()
         actionDict = {}
         for action in legalActions:
             actionDict[action] = self.evaluateAction(action, state)
 
         sortedDict = sorted(actionDict.items(), key=operator.itemgetter(1), reverse=True)
         bestAction = sortedDict[0][0]
-        self.positionsVisited.add(bestAction)
 
-        if state.getPacmanPosition() in self.capsulesAvailable:
-            self.capsulesAvailable.remove(state.getPacmanPosition())
+        if pacmanPosition in self.capsulesAvailable:
+            self.capsulesAvailable.remove(pacmanPosition)
 
         return bestAction
 
