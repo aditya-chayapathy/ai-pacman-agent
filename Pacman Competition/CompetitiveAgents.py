@@ -86,9 +86,15 @@ class CompetitiveAgent(Agent):
             pacmanOpponentDist = self.mazeDistance(pacmanPosition, opponentPosition, nextState)
 
             if isOpponentAngry and not isPacmanAngry:
-                actionValue += pacmanOpponentDist
                 if action == Directions.STOP:
                     actionValue -= 1000
+                if isCapsuleAround:
+                    if distanceToNearestCapsule < pacmanOpponentDist:
+                        actionValue -= (10 * distanceToNearestCapsule + pacmanOpponentDist)
+                    else:
+                        actionValue += (10 * pacmanOpponentDist + distanceToNearestCapsule)
+                else:
+                    actionValue += pacmanOpponentDist
             elif isPacmanAngry and not isOpponentAngry:
                 actionValue -= pacmanOpponentDist
             elif isOpponentAngry and isPacmanAngry:
